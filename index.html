@@ -22,7 +22,7 @@
     padding: 50px 60px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.1);
     text-align: center;
-    max-width: 600px;
+    max-width: 650px;
     width: 90%;
     animation: fadeIn 0.8s ease;
   }
@@ -80,16 +80,17 @@
   }
 
   #result {
-    font-size: 1.5rem;
-    font-weight: bold;
+    font-size: 1.1rem;
+    font-weight: 500;
     margin-top: 35px;
     opacity: 0;
-    transform: scale(0.9);
+    transform: scale(0.95);
     transition: all 0.6s ease;
+    line-height: 1.6;
   }
 
-  .capital { color: #d9534f; }
-  .profit { color: #2e8b57; }
+  .capital { color: #d9534f; font-weight: bold; }
+  .profit { color: #2e8b57; font-weight: bold; }
 
   footer {
     font-size: 0.8rem;
@@ -125,7 +126,6 @@
     </div>
     <div id="result"></div>
 
-    <!-- ✅ 하단 링크 추가 -->
     <footer>
       📘 참고: 
       <a href="https://kasb.or.kr/front/board/View3001.do?siteCd=002000000000000&gubun=3001&accstdSeq=29&searchfield=TITLE&searchword=&searchfield2=ENACTMENT_DT&s_date_start=&s_date_end=" target="_blank">
@@ -137,15 +137,29 @@
 <script>
 const tree = {
   1: { text: "완전히 새로운 재화를 구매하는 것입니까?", yes: 2, no: 3 },
-  2: { text: "내용연수가 한 회계기간(1년)을 넘습니까?", yes: 4, no: "A" },
-  3: { text: "현재 상태(기능) 유지의 목적입니까? (수리, 점검, Overhaul, 청소, 예비품 등)", yes: 5, no: 7 },
-  4: { text: "중요성 측면에서 자산으로 관리할만한 가치가 있는 신규 자산입니까?", yes: "B", no: "A" },
-  5: { text: "예비품에 해당하는 구매입니까?", yes: 6, no: "A" },
-  6: { text: "별도의 자산으로 관리해야 할 만큼 중요한 예비품입니까?", yes: "B", no: "A" },
-  7: { text: "개별 단위가액이 600만원 이하이고, 생산에 끼치는 영향이 작습니까?", yes: "A", no: 8 },
-  8: { text: "자산을 설치하는 과정에서 의도대로 사용하기 위해 발생한 지출입니까? (설치공사, 이전공사 등)", yes: "B", no: 9 },
-  9: { text: "자산을 대체하는 구매이며, 이로 인해 생산능력 증대나 원가절감이 있었습니까?", yes: "B", no: 10 },
-  10:{ text: "자산의 목적(용도나 생산물 등)이 변경되었습니까?", yes: "B", no: "A" }
+  2: { text: "내용연수가 한 회계기간(1년)을 넘습니까?", yes: 4, no: "해당 건은 소모성 재화이므로 <span class='profit'>수익적 지출</span>로 처리합니다." },
+  3: { text: "현재 상태(기능) 유지의 목적입니까? (수리, 점검, Overhaul, 청소, 예비품, 대기성 장비비 등)", yes: 5, no: 7 },
+  4: { text: "중요성 측면에서 자산으로 관리할만한 가치가 있는 신규 자산입니까?", 
+       yes: "자산 요건에 해당하는 건으로 <span class='capital'>자본적 지출</span>로 처리합니다.", 
+       no: "자산 요건에는 해당하지만 개별단위가액이나 중요성이 적기 때문에 <span class='profit'>수익적 지출(재고자산)</span>로 처리하여 관리합니다." },
+  5: { text: "예비부품, 대기성장비, 수선용구에 해당하는 구매입니까?", 
+       yes: 6, 
+       no: "유지와 관련된 지출 중 청소·점검(overhaul) 등은 <span class='profit'>수익적 지출</span>로 처리합니다." },
+  6: { text: "1년 이상 사용이 가능하고, 생산에 중요한 예비품입니까?", 
+       yes: "제1016호 8항에 따라 예비부품·대기성장비·수선용구라도 자산 요건에 해당하므로 <span class='capital'>자본적 지출</span> 처리 가능합니다.", 
+       no: "1년 이하로 소모되는 소모품 구매로, 수선비로써 <span class='profit'>수익적 지출</span>로 처리합니다." },
+  7: { text: "개별 단위가액이 600만원 이하이고, 생산에 끼치는 영향이 작습니까?", 
+       yes: "중요성의 원칙에 따라 <span class='profit'>수익적 지출</span>로 처리하며, 법인세법상 당기비용처리 가능합니다.", 
+       no: 8 },
+  8: { text: "자산을 설치하는 과정에서 의도대로 사용하기 위해 발생한 지출입니까? (설치공사, 이전공사 등)", 
+       yes: "자산을 경영진의 의도대로 사용하기 위해 발생한 비용은 취득원가에 가산되어 <span class='capital'>자본적 지출</span>로 처리합니다.", 
+       no: 9 },
+  9: { text: "자산을 대체하는 구매이며, 이로 인해 생산능력 증대나 원가절감이 있었습니까?", 
+       yes: "생산력 증대, 품질 향상, 원가 절감 효과가 있다면 <span class='capital'>자본적 지출</span>로 처리 가능합니다.", 
+       no: 10 },
+  10:{ text: "자산의 목적(용도나 생산물 등)이 변경되었습니까?", 
+        yes: "자산의 용도가 변경된 경우 단순 유지가 아닌 개량으로 보아 <span class='capital'>자본적 지출</span>로 처리합니다.", 
+        no: "해당 건은 자산 요건에 해당하지 않으므로 <span class='profit'>수익적 지출</span>로 처리합니다." }
 };
 
 let current = null;
@@ -169,7 +183,7 @@ function animateQuestion(text) {
   q.style.opacity = 0;
   q.style.transform = 'translateX(-10px)';
   setTimeout(() => {
-    q.textContent = text;
+    q.innerHTML = text;
     q.style.transform = 'translateX(0)';
     q.style.opacity = 1;
   }, 300);
@@ -178,33 +192,33 @@ function animateQuestion(text) {
 function next(answer) {
   const node = tree[current];
   const nextNode = node[answer];
-  if (nextNode === "A" || nextNode === "B") {
-    showResult(nextNode);
+  const result = document.getElementById('result');
+  result.style.opacity = 0;
+
+  if (typeof nextNode === "string") {
+    showExplanation(nextNode);
     return;
   }
+
   current = nextNode;
   animateQuestion(tree[current].text);
 }
 
 function showQuestion(text) {
   animateQuestion(text);
-  const result = document.getElementById('result');
-  result.style.opacity = 0;
+  document.getElementById('result').style.opacity = 0;
 }
 
-function showResult(type) {
+function showExplanation(text) {
   const q = document.getElementById('question');
   const btns = document.getElementById('buttons');
   const result = document.getElementById('result');
 
+  q.textContent = "결과 요약";
   btns.innerHTML = `<button onclick="start()">다시 시작</button>`;
-  q.textContent = "결과:";
 
-  result.style.opacity = 0;
   setTimeout(() => {
-    result.innerHTML = type === "A"
-      ? `<span class="profit">✅ 수익적 지출입니다.</span>`
-      : `<span class="capital">🏗️ 신규자산 취득 혹은 자본적 지출입니다.</span>`;
+    result.innerHTML = text;
     result.style.opacity = 1;
     result.style.transform = "scale(1)";
   }, 300);
