@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>자본적 & 수익적 지출 구분</title>
+<style>
+  body {
+    font-family: "Pretendard", sans-serif;
+    background: linear-gradient(180deg, #f4f7fb 0%, #eef1f5 100%);
+    color: #222;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+  }
+  .container {
+    background: white;
+    border-radius: 18px;
+    padding: 50px 60px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    text-align: center;
+    max-width: 600px;
+    width: 90%;
+    animation: fadeIn 0.8s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  h1 {
+    color: #0078D7;
+    margin-bottom: 15px;
+  }
+  .notice {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 25px;
+    line-height: 1.5;
+  }
+
+  #questionBox {
+    background: #f8fafc;
+    border-radius: 14px;
+    padding: 30px 25px;
+    margin: 30px 0 25px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.03);
+    transition: all 0.4s ease;
+    min-height: 80px;
+  }
+
+  #question {
+    font-size: 1.2rem;
+    opacity: 1;
+    transition: all 0.4s ease;
+  }
+
+  button {
+    background: #0078D7;
+    border: none;
+    color: white;
+    padding: 14px 40px;
+    border-radius: 10px;
+    font-size: 1rem;
+    margin: 8px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+
+  button:hover {
+    background: #005fa3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,120,215,0.25);
+  }
+  button:active {
+    transform: scale(0.96);
+  }
+
+  #result {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-top: 35px;
+    opacity: 0;
+    transform: scale(0.9);
+    transition: all 0.6s ease;
+  }
+
+  .capital { color: #d9534f; }
+  .profit { color: #2e8b57; }
+
+  footer {
+    font-size: 0.8rem;
+    color: #777;
+    margin-top: 35px;
+    text-align: center;
+  }
+
+  footer a {
+    color: #0078D7;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  footer a:hover {
+    text-decoration: underline;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>💰 자본적 & 수익적 지출 구분</h1>
+    <div class="notice">
+      ※ 참고용 결과입니다.<br>
+      실제 회계처리 시에는 FA 담당자와 협의하세요.
+    </div>
+
+    <div id="questionBox">
+      <div id="question">시작하려면 아래 버튼을 눌러주세요.</div>
+    </div>
+
+    <div id="buttons">
+      <button onclick="start()">시작</button>
+    </div>
+    <div id="result"></div>
+
+    <!-- ✅ 하단 링크 추가 -->
+    <footer>
+      📘 참고: 
+      <a href="https://kasb.or.kr/front/board/View3001.do?siteCd=002000000000000&gubun=3001&accstdSeq=29&searchfield=TITLE&searchword=&searchfield2=ENACTMENT_DT&s_date_start=&s_date_end=" target="_blank">
+        K-IFRS 제1016호 유형자산 전문
+      </a>
+    </footer>
+  </div>
+
+<script>
+const tree = {
+  1: { text: "완전히 새로운 재화를 구매하는 것입니까?", yes: 2, no: 3 },
+  2: { text: "내용연수가 한 회계기간(1년)을 넘습니까?", yes: 4, no: "A" },
+  3: { text: "현재 상태(기능) 유지의 목적입니까? (수리, 점검, Overhaul, 청소, 예비품 등)", yes: 5, no: 7 },
+  4: { text: "중요성 측면에서 자산으로 관리할만한 가치가 있는 신규 자산입니까?", yes: "B", no: "A" },
+  5: { text: "예비품에 해당하는 구매입니까?", yes: 6, no: "A" },
+  6: { text: "별도의 자산으로 관리해야 할 만큼 중요한 예비품입니까?", yes: "B", no: "A" },
+  7: { text: "개별 단위가액이 600만원 이하이고, 생산에 끼치는 영향이 작습니까?", yes: "A", no: 8 },
+  8: { text: "자산을 설치하는 과정에서 의도대로 사용하기 위해 발생한 지출입니까? (설치공사, 이전공사 등)", yes: "B", no: 9 },
+  9: { text: "자산을 대체하는 구매이며, 이로 인해 생산능력 증대나 원가절감이 있었습니까?", yes: "B", no: 10 },
+  10:{ text: "자산의 목적(용도나 생산물 등)이 변경되었습니까?", yes: "B", no: "A" }
+};
+
+let current = null;
+
+function start() {
+  current = 1;
+  showQuestion(tree[current].text);
+  showButtons();
+}
+
+function showButtons() {
+  const btnDiv = document.getElementById('buttons');
+  btnDiv.innerHTML = `
+    <button onclick="next('yes')">예</button>
+    <button onclick="next('no')">아니요</button>
+  `;
+}
+
+function animateQuestion(text) {
+  const q = document.getElementById('question');
+  q.style.opacity = 0;
+  q.style.transform = 'translateX(-10px)';
+  setTimeout(() => {
+    q.textContent = text;
+    q.style.transform = 'translateX(0)';
+    q.style.opacity = 1;
+  }, 300);
+}
+
+function next(answer) {
+  const node = tree[current];
+  const nextNode = node[answer];
+  if (nextNode === "A" || nextNode === "B") {
+    showResult(nextNode);
+    return;
+  }
+  current = nextNode;
+  animateQuestion(tree[current].text);
+}
+
+function showQuestion(text) {
+  animateQuestion(text);
+  const result = document.getElementById('result');
+  result.style.opacity = 0;
+}
+
+function showResult(type) {
+  const q = document.getElementById('question');
+  const btns = document.getElementById('buttons');
+  const result = document.getElementById('result');
+
+  btns.innerHTML = `<button onclick="start()">다시 시작</button>`;
+  q.textContent = "결과:";
+
+  result.style.opacity = 0;
+  setTimeout(() => {
+    result.innerHTML = type === "A"
+      ? `<span class="profit">✅ 수익적 지출입니다.</span>`
+      : `<span class="capital">🏗️ 신규자산 취득 혹은 자본적 지출입니다.</span>`;
+    result.style.opacity = 1;
+    result.style.transform = "scale(1)";
+  }, 300);
+}
+</script>
+</body>
+</html>
