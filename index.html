@@ -35,6 +35,14 @@
     color: #0078D7;
     margin-bottom: 15px;
   }
+  .money {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  .money:hover {
+    transform: scale(1.1);
+  }
+
   .notice {
     font-size: 0.85rem;
     color: #666;
@@ -111,7 +119,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>💰 자본적 & 수익적 지출 구분</h1>
+    <h1><span class="money" ondblclick="toggleMoney(this)">💰</span> 자본적 & 수익적 지출 구분</h1>
     <div class="notice">
       ※ 참고용 결과입니다.<br>
       실제 회계처리 시에는 FA 담당자와 협의하세요.
@@ -128,13 +136,17 @@
 
     <footer>
       📘 참고: 
-      <a href="https://kasb.or.kr/front/board/ingAccountingList.do"_blank">
+      <a href="https://kasb.or.kr/front/board/ingAccountingList.do" target="_blank">
         K-IFRS 제1016호 유형자산 전문/ K-IFRS 제1038호 무형자산 전문
       </a>
     </footer>
   </div>
 
 <script>
+function toggleMoney(el) {
+  el.textContent = el.textContent === "💰" ? "🪙💵💶💴" : "💰";
+}
+
 const tree = {
   1: { text: "완전히 새로운 재화를 구매하는 것입니까?", yes: 2, no: 3 },
   2: { text: "내용연수가 한 회계기간(1년)을 넘습니까?", yes: 4, no: "해당 건은 소모성 재화이므로 <span class='profit'>수익적 지출</span>로 처리합니다." },
@@ -226,5 +238,3 @@ function showExplanation(text) {
 </script>
 </body>
 </html>
-
-
